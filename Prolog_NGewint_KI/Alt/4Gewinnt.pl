@@ -1,0 +1,102 @@
+% Momentan: Listen in folgender Form 
+% Spieler 1: x 
+% Spieler 2: o 
+% leeres Feld: e 
+% Eingabenprüfung eventuell durch allgemeinen Fall bei Funktionen, der Fehlermelung gibt, wenn sonstie nicht passen 
+% Wenn die Prädikate weiterhin mit (Player,Board) bestimmt sein sollen, dann extra prädikat bzw Player=[H|T] (bspw) 
+% Abstrahieren von all den Dingern, die eine Liste durchlaufen mit kontrollwert? 
+% Idee -> vllt lässt man den Spieler nur die Repräsentation von show_player auswählen (wäre zumindest cool mehr als x/o zu bekommen^^ 
+% Durch Lesen der Aufgabe 2 scheint eine Repräsentation durch eine Liste (reihe) von Listen(Spalten) durchaus geeignet 
+% Wir beginnen mit der Repräsentation des Spielfelds. 
+
+ex(R):-R= [[e,e,e,e],[x,e,e,e],[o,x,e,e],[x,e,e,e]]. 
+drawBoard(R):-R=[[x,o,x,o],[o,x,o,x],[x,o,x,o],[x,x,x,xd]]. 
+
+empty_list([]). 
+empty_list([e|X]):-empty_list(X). 
+
+% Definieren Sie ein Prädikat empty_board(Board), welches genau dann erfüllt ist, wenn durch Board ein leeres Spielfeld repräsentiert wird. 
+
+empty_board([]). 
+empty_board([H|T]):-empty_list(H), empty_board(T).
+
+% Position in Liste 
+
+getPos(0,[H0|_],Result):-Result=H0.
+getPos(X,[_|T0],Result):-N is X - 1, getPos(N,T0,Result). 
+
+% Position in Liste von Listen, nutzt die Position in einfacher Liste 
+
+getPos(0,0,[[H0|_]|_],Result):-Result=H0. 
+getPos(0,0,[H0|_],Result):-Result=H0. 
+getPos(0,0,X,Result):-Result=X. 
+getPos(0,Y,[H0|_],Result):-getPos(Y,H0,Result). 
+getPos(X,0,[_|T0],Result):-N is X-1, getPos(N,0,T0,Result). 
+getPos(X,Y,[_|T0],Result):-N is X-1, getPos(N,Y,T0,Result). % erst richtige spalte finden dann s.o. 
+
+% Implementieren Sie dann ein Prädikat show_board(Board) zum sogenannten Pretty-Printing, das ein Spielfeld "schön" auf der Konsole ausgibt. Das kann bspw. wie folgt aussehen: 
+% | | | | | | | | 
+% | | | | | | | | 
+% | | |x| |x| | | 
+% | | |o|x|o| | | 
+% | | |o|o|x|x| | 
+% | | |o|x|o|x| | 
+% Hinweis: Für die Realisierung der Ausgabe können Sie das vordefinierte Prädikat write/1 verwenden. 
+
+% show_board(Board). 
+
+show_row([]):-write("|\n"). 
+show_row([H|T]):-write("|"),show_player(H),show_row(T).
+
+show_board([[]|_]):-write("board:\n"). 
+show_board(X):-getHeads(X,Hs),getTails(X,Ts),show_board(Ts),show_row(Hs). 
+
+getHeads([],R):-R=[]. 
+getHeads([H0],Ret):-H0=[H1|_],Ret=[H1]. 
+getHeads([H0|T0],Ret):-H0=[H1|_],getHeads(T0,R),Ret=[H1|R]. 
+
+getTails([],R):-R=[[]]. 
+getTails([H0],Ret):-H0=[_|T],Ret=[T]. 
+getTails([H0|T0],Ret):-H0=[_|T1],getTails(T0,R),Ret=[T1|R]. 
+
+% Übersetzt Repräsentation in Darstellung 
+
+show_player(x):-write("x"). 
+show_player(o):-write("o"). 
+show_player(_):-write(" "). 
+
+% Weiterhin müssen wir in der Lage sein, den Ausgang eines Spiels feststellen zu können. 
+% Definieren Sie ein Prädikat win_board(Player, Board), das genau dann erfüllt ist, wenn für den Spieler Player auf dem Spielfeld Board eine Gewinnsituation vorliegt. 
+
+amountToWin(4). 
+
+columnWin([H|_],0,Player):-H=Player. 
+columnWin([H|T],X,Player):-H=Player,N is X-1,columnWin(T,N,Player). 
+
+% columnWin(Part,Needed,Player).
+columnWin(X,Player):-X=[H,T],amountToWin(N),(columnWin(X,N,Player);columnWin(T,Player)).
+
+% wonInColumns(Board,Player). 
+wonInColumns([H],Player):-columnWin(H,Player). 
+wonInColumns([H|T],Player):-columnWin(H,Player);wonInColumns(T,Player). 
+
+% should use getHeads & getTails 
+rowWon(SingleRow,Player). 
+wonInRows(Board,Player). 
+
+% win_board(Player,Board):-wonInRows(Board,Player);wonInColums(Board,Player);wonInDiags(Board,Player). 
+% Definieren Sie außerdem ein Prädikat draw_board(Board), das genau dann erfüllt ist, wenn auf dem Spielfeld Board keine weiteren Züge mehr möglich sind. 
+
+hasEmptySlot([H]):-H=e. 
+hasEmptySlot([H|T]):-H=e;hasEmptySlot(T). 
+
+isFull([]). 
+isFull([H]):-H\=e. 
+isFull([H|T]):-H\=e,isFull(T). 
+
+% und wenn jemand gewonnen hat aber dies aufgerufen wird? "!" im spiel oder so? 
+% draw_board(Board). 
+
+draw_board([[]]). 
+draw_board([H]):-isFull(H). 
+draw_board([H0|T0]):-isFull(H0),draw_board(T0). 

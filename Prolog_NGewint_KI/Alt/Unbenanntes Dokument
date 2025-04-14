@@ -1,0 +1,19 @@
+% intelligentMove prüft, ob der menschliche Spieler gewinnt wenn er in die gleiche Spalte wirft wie der Spieler evtl. auch in Spalte die meherere Nachbarn hat vom Computer(Max).
+
+intelligentMove(State,Col,Columns,Ret) :- (checkNextTurnWin(State,Col,Columns,Return), Return == 1 
+					-> random_between(1,Columns,Column), Ret = Column;
+					checkWinningNextTurn(State,Col,Columns,Ret), Ret = intelligentMove(State,Col,Columns,Ret)
+                                       ), !.
+
+% check if the player anyways win after doing our turn
+checkNextTurnWin(State,0,Columns,Ret) :- Ret = 1.
+checkNextTurnWin(State,Col,Columns,Ret) :- (State = [Board|[Player]], columnPossible(Board,Col), placeInColumn(Board,Player,Col,NewBoard), columnPossible(NewBoard,Col), otherPlayer(Player,PlayerX), placeInColumn(NewBoard,PlayerX,Col,NewNewBoard), win_board(NewNewBoard,PlayerX) 
+					-> ColX is Col - 1, checkNextTurnWin(State,ColX,Columns,Ret);
+					Ret = 0).
+
+
+% check if human can win after computers turn.
+checkWinningNextTurn(State,Col,Columns,Ret) :- 
+		(random_between(1,Columns,Column), State = [Board|[Player]], columnPossible(Board,Column), placeInColumn(Board,Player,Column,NewBoard), columnPossible(NewBoard,Column), otherPlayer(Player,PlayerX), placeInColumn(NewBoard,PlayerX,Column,NewNewBoard), win_board(NewNewBoard,PlayerX) 
+		-> Ret = 0;
+		Ret = Column).
